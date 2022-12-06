@@ -8,17 +8,40 @@ def read_lines_from_file(file_name: str) -> List[str]:
         return ifile.readlines()
 
 
+class MyCounter:
+    OFFSET = ord('a')
+
+    def __init__(self):
+        self._memory = [0]*26
+        self._uniques = 0
+
+    def add(self, key):
+        index = ord(key) - self.OFFSET
+        if self._memory[index] == 0:
+            self._uniques += 1
+        self._memory[index] += 1
+
+    def remove(self, key):
+        index = ord(key) - self.OFFSET
+        self._memory[index] -= 1
+        if self._memory[index] == 0:
+            self._uniques -= 1
+
+    def number_of_unique_keys(self) -> int:
+        return self._uniques
+
+
 def task(message: str, packet_size: int):
-    counter = defaultdict(int)
+    counter = MyCounter()
     buffer = deque(message[:packet_size])
     for letter in buffer:
-        counter[letter] += 1
+        counter.add(letter)
     for i, letter in enumerate(message[packet_size:], packet_size):
-        if all(counter[letter] == 1 for letter in buffer):
+        if counter.number_of_unique_keys() == packet_size:
             print(i)
             return i
-        counter[buffer.popleft()] -= 1
-        counter[letter] += 1
+        counter.remove(buffer.popleft())
+        counter.add(letter)
         buffer.append(letter)
     raise RuntimeError
 
